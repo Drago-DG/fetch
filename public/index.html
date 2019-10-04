@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>División de Números</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      body {
+        font-family: sans-serif;
+        background-image: url('https://i2.wp.com/c4.staticflickr.com/8/7758/17804080653_8ca1e0b9cd.jpg?resize=500%2C313&ssl=1');
+        background-repeat: no-repeat;
+        background-size: cover;
+      }
+
+      h1{
+        text-align: center;
+        color: white;
+      }
+
+      #vista{
+        margin-left: 35%;
+        padding-left: 68px;
+        padding-top: 8px;
+        background-color: rgb(249, 250, 250);
+        width: 25%;
+        height: 250px;
+      }
+
+      footer{
+        margin-left:5%;
+        color:black;
+
+      }
+
+      input{
+        height:25px;
+        width:180px;
+        padding-left: 14px;
+        margin-left: 40px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>División de Números</h1>
+    <form id="vista">
+      <p><output id="respuesta"></output></p>
+      <p><input type="number" id="numero1" required placeholder="Número 1"></p>
+      <p><input type="number" id="numero2" required placeholder="Número 2"></p>
+      <p>
+        <button type="submit" id="btn">Mostrar (Hilos)</button>
+        <button type="button" id="saludarHttp">Mostrar (Http)</button>
+      </p>
+      <footer><b>Carrillo Sánchez Adelcky IC51-M</b></footer>
+    </form>
+
+    
+    <script type="module">
+     
+      const hilo = new Worker("wwSaludo.js");
+
+     
+      vista.addEventListener("submit", mostrarHilo);
+
+      
+      saludarHttp.addEventListener("click", saludaHttp);
+
+     
+      hilo.addEventListener("message", evt => muestraRespuesta(evt.data));
+
+     
+      function muestraRespuesta(texto) {
+        respuesta.value = texto;
+      }
+
+     
+      function mostrarHilo(evt) {
+        evt.preventDefault();
+      
+        const modelo = leeModelo();
+        
+        hilo.postMessage(modelo);
+      }
+
+    
+      function leeModelo() {
+      
+        return {
+        
+          numero1: numero1.value,
+          numero2: numero2.value
+        };
+      }
+
+    
+      function saludaHttp() {
+        const modelo = leeModelo();
+        
+        fetch("saludo?numero1=" + encodeURIComponent(modelo.numero1)
+          + "&numero2=" + encodeURIComponent(modelo.numero2))
+          /* then recibe una función que se ejecuta cuando la comunicación con
+           * el servidor haya terminado exitosamente. */
+          .then(
+            /** Función que se ejecuta cuando la comunicación con el servidor
+             * haya terminado exitosamente.
+             * @param {Response} respuestaHttp el resultado de la conexión */
+            respuestaHttp => {
+              /* La property ok de la respuesta vale true si la conexión terminó
+               * con éxito. */
+              if (respuestaHttp.ok) {
+                /* En esta parte del if, la conexión terminó con éxito. Hay que
+                 * mostrar el texto del servidor. respuestaHttp.text() devuelve
+                 * una promise con el texto recibido; dicha promise se devuelve
+                 * como resultado de esta función. */
+                return respuestaHttp.text();
+              } else {
+                /* En esta parte del if, la conexión terminó con errores. Se
+                 * Lanza una excepción que será atrapada por la función del
+                 * .catch en la línea 111. respuestaHttp.statusText devuelve
+                 * untexto describiendo el error, que normalmente está en
+                 * inglés. */
+                throw new Error(respuestaHttp.statusText)
+              }
+            })
+          /* La función del .then anterior, devuelve una promise; cuando esta
+           * termina de ejecutarse, el valor que devuelve se le pasa a la
+           * función de este then. */
+          .then(texto => muestraRespuesta(texto))
+          /* Cuando se genere una excepción en cualquier punto de la cadena
+           * de operaciones, se invoca la función que recibe catch. */
+          .catch(e => muestraRespuesta(e.message));
+      }
+
+    </script>
+    
+  </body>
+</html>
